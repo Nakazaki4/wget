@@ -18,7 +18,7 @@ func main() {
 
 	if cfg.Background {
 		// need to fork the process
-		downloader.HandleBackground(&cfg)
+		downloader.HandleBackground()
 		os.Exit(0)
 	} else {
 		commandExecute(&cfg)

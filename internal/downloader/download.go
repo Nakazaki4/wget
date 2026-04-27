@@ -3,6 +3,7 @@ package downloader
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,10 +19,10 @@ func Download(cfg *Config) {
 			fmt.Printf("start at %v\n", time.Now().Format("2006-01-02 15:04:05"))
 			fmt.Print("sending request, waiting for response...")
 			resp, err := http.Get(url)
-			fmt.Printf(" status %d %s\n", resp.StatusCode, http.StatusText(resp.StatusCode))
 			if err != nil {
-				fmt.Printf("%v \n", err)
+				log.Fatalf("%v \n", err)
 			}
+			fmt.Printf(" status %d %s\n", resp.StatusCode, http.StatusText(resp.StatusCode))
 			defer resp.Body.Close()
 
 			if cfg.OutputName == "" {
@@ -35,7 +36,12 @@ func Download(cfg *Config) {
 				fmt.Printf("%v \n", err)
 			}
 
-			if err := copyFile(url, savePath, file, resp.Body, resp.ContentLength); err != nil {
+			var reader io.Reader = resp.Body
+			if cfg.RateLimit!= ""{
+				reader = newRateLimitedReader(reader, parseRateLimit(cfg.RateLimit))
+			}
+
+			if err := copyFile(url, savePath, file, reader, resp.ContentLength); err != nil {
 				fmt.Printf("%v \n", err)
 			}
 		}()

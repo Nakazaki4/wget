@@ -7,26 +7,24 @@ import (
 	"os/exec"
 )
 
-func HandleBackground(cfg *Config) {
-	log_file, err := os.Create("wget-log")
+func HandleBackground() {
+	logFile, err := os.Create("wget-log")
 	if err != nil {
 		log.Fatal(`can't create the log file "wget-log"`)
 	}
 	fmt.Println(`Output will be written to "wget-log"`)
 
-	os.Stdout = log_file
-	defer log_file.Close()
-
-	executable, err := os.Executable()
-	if err != nil {
-		log.Fatal("can't get the executable path")
+	var newArgs []string
+	for _, arg := range os.Args[1:] {
+		if arg != "-B" {
+			newArgs = append(newArgs, arg)
+		}
 	}
 
-	newArgs := []string{}
-	cmd := exec.Command(executable, )
-	err = cmd.Start()
-	if err != nil {
-		log.Fatal("can't start the background process")
+	cmd := exec.Command(os.Args[0], newArgs...)
+	cmd.Stdout = logFile
+	cmd.Stderr = logFile
+	if err := cmd.Start(); err != nil {
+		log.Fatal("can't start background process")
 	}
-
 }
