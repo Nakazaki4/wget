@@ -13,38 +13,41 @@ import (
 	"golang.org/x/term"
 )
 
-func Download(cfg *Config) {
-	for _, url := range cfg.URLs {
-		func() {
-			fmt.Printf("start at %v\n", time.Now().Format("2006-01-02 15:04:05"))
-			fmt.Print("sending request, waiting for response...")
-			resp, err := http.Get(url)
-			if err != nil {
-				log.Fatalf("%v \n", err)
-			}
-			fmt.Printf(" status %d %s\n", resp.StatusCode, http.StatusText(resp.StatusCode))
-			defer resp.Body.Close()
+func Download(cfg *Config, url, basePath string) {
+	fmt.Printf("start at %v\n", time.Now().Format("2006-01-02 15:04:05"))
+	fmt.Print("sending request, waiting for response...")
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Fatalf("%v \n", err)
+	}
+	fmt.Printf(" status %d %s\n", resp.StatusCode, http.StatusText(resp.StatusCode))
+	defer resp.Body.Close()
 
-			if cfg.OutputName == "" {
-				parts := strings.Split(url, "/")
-				cfg.OutputName = parts[len(parts)-1]
-			}
+	if cfg.OutputName == "" {
+		parts := strings.Split(url, "/")
+		cfg.OutputName = parts[len(parts)-1]
+	}
 
-			savePath := filepath.Join(cfg.OutputPath, cfg.OutputName)
-			file, err := os.Create(savePath)
-			if err != nil {
-				fmt.Printf("%v \n", err)
-			}
+	fileSavePath := filepath.Join(basePath, cfg.OutputName)
 
-			var reader io.Reader = resp.Body
-			if cfg.RateLimit != "" {
-				reader = newRateLimitedReader(reader, parseRateLimit(cfg.RateLimit))
-			}
+	dir := filepath.Dir(fileSavePath)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		fmt.Printf("failed to create directory %s: %v\n", dir, err)
+		return
+	}
 
-			if err := copyFile(url, savePath, file, reader, resp.ContentLength); err != nil {
-				fmt.Printf("%v \n", err)
-			}
-		}()
+	file, err := os.Create(fileSavePath)
+	if err != nil {
+		fmt.Printf("%v \n", err)
+	}
+
+	var reader io.Reader = resp.Body
+	if cfg.RateLimit != "" {
+		reader = newRateLimitedReader(reader, parseRateLimit(cfg.RateLimit))
+	}
+
+	if err := copyFile(url, cfg.OutputPath, file, reader, resp.ContentLength); err != nil {
+		fmt.Printf("%v \n", err)
 	}
 }
 

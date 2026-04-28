@@ -27,4 +27,5 @@ func HandleBackground() {
 	if err := cmd.Start(); err != nil {
 		log.Fatal("can't start background process")
 	}
+	fmt.Printf("Background process started with the ID %d\n", cmd.Process.Pid)
 }

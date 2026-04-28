@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"os/user"
+	"path/filepath"
 	"strings"
 
 	"wget/internal/downloader"
@@ -30,8 +33,34 @@ func commandExecute(cfg *downloader.Config) {
 		// should route to the mirroring section
 	} else {
 		// route to the normal download section
-		downloader.Download(cfg)
+		base_path := expandHomeDir(cfg.OutputPath)
+		if cfg.InputFile != "" {
+			file, err := os.Open(cfg.InputFile)
+			if err != nil {
+			}
+			scanner := bufio.NewScanner(file)
+
+			for scanner.Scan() {
+				url := scanner.Text()
+				downloader.Download(cfg, url, base_path)
+			}
+			if err := scanner.Err(); err != nil {
+				fmt.Println("Error reading file:", err)
+			}
+		} else {
+			for _, url := range cfg.URLs {
+				downloader.Download(cfg, url, base_path)
+			}
+		}
 	}
+}
+
+func expandHomeDir(path string) string {
+	if len(path) > 1 && path[0] == '~' {
+		usr, _ := user.Current()
+		return filepath.Join(usr.HomeDir, path[1:])
+	}
+	return path
 }
 
 func parseArgs() downloader.Config {
