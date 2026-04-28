@@ -37,7 +37,7 @@ func Download(cfg *Config) {
 			}
 
 			var reader io.Reader = resp.Body
-			if cfg.RateLimit!= ""{
+			if cfg.RateLimit != "" {
 				reader = newRateLimitedReader(reader, parseRateLimit(cfg.RateLimit))
 			}
 
@@ -97,18 +97,44 @@ func printProgress(downloaded, total int64, start time.Time) {
 	if remaining_time < time.Second {
 		time_str = "0s"
 	} else {
-		time_str = fmt.Sprintf("%.0fs", remaining_time.Seconds())
+		time_str = formatDuration(remaining_time)
 	}
 
 	fmt.Printf("\r %s / %s [%s] %.2f%% %s %s",
 		dl_str, tot_str, bar, percent, speed_str, time_str)
 }
 
+func formatDuration(d time.Duration) string {
+	seconds := int(d.Seconds())
+
+	minutes := seconds / 60
+	hours := minutes / 60
+	days := hours / 24
+	weeks := days / 7
+
+	switch {
+	case seconds < 60:
+		return fmt.Sprintf("%ds", seconds)
+
+	case minutes < 60:
+		return fmt.Sprintf("%dm", minutes)
+
+	case hours < 24:
+		return fmt.Sprintf("%dh %dm", hours, minutes-(hours*60))
+
+	case days < 7:
+		return fmt.Sprintf("%dd %dh", days, hours-(days*24))
+
+	default:
+		return fmt.Sprintf("%dw", weeks)
+	}
+}
+
 func formatSize(b int64) string {
 	if b >= 1024*1024 {
-		return fmt.Sprintf("%.2f MiB", float64(b)/1024/1024)
+		return fmt.Sprintf("%d MiB", b/1024/1024)
 	}
-	return fmt.Sprintf("%.2f KiB", float64(b)/1024)
+	return fmt.Sprintf("%d KiB", b/1024)
 }
 
 func getBarWidth() int {

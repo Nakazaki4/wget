@@ -1,2 +1,0 @@
-start at 2026-04-27 16:36:19
-sending request, waiting for response...2026/04/27 16:36:19 Get "https://speed.hetzner.de/1GB.bin": tls: failed to verify certificate: x509: certificate has expired or is not yet valid: current time 2026-04-27T16:36:19+01:00 is after 2024-10-08T23:59:59Z 
