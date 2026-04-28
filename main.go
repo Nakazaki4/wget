@@ -14,7 +14,7 @@ import (
 func main() {
 	cfg := parseArgs()
 
-	if len(cfg.URLs) == 0 {
+	if len(cfg.URLs) == 0 && cfg.InputFile == ""{
 		fmt.Println("At least one URL is required")
 		os.Exit(1)
 	}
