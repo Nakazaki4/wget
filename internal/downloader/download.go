@@ -23,12 +23,15 @@ func Download(cfg *Config, url, basePath string) {
 	fmt.Printf(" status %d %s\n", resp.StatusCode, http.StatusText(resp.StatusCode))
 	defer resp.Body.Close()
 
+	var output_file_name string
 	if cfg.OutputName == "" {
 		parts := strings.Split(url, "/")
-		cfg.OutputName = parts[len(parts)-1]
+		output_file_name = parts[len(parts)-1]
+	} else {
+		output_file_name = cfg.OutputName
 	}
 
-	fileSavePath := filepath.Join(basePath, cfg.OutputName)
+	fileSavePath := filepath.Join(basePath, output_file_name)
 
 	dir := filepath.Dir(fileSavePath)
 	if err := os.MkdirAll(dir, 0o755); err != nil {

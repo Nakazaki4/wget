@@ -14,7 +14,7 @@ import (
 func main() {
 	cfg := parseArgs()
 
-	if len(cfg.URLs) == 0 && cfg.InputFile == ""{
+	if len(cfg.URLs) == 0 && cfg.InputFile == "" {
 		fmt.Println("At least one URL is required")
 		os.Exit(1)
 	}
@@ -42,6 +42,7 @@ func commandExecute(cfg *downloader.Config) {
 
 			for scanner.Scan() {
 				url := scanner.Text()
+				// fmt.Println(url)
 				downloader.Download(cfg, url, base_path)
 			}
 			if err := scanner.Err(); err != nil {
@@ -99,6 +100,10 @@ func parseArgs() downloader.Config {
 				fmt.Printf("Unknown flag: %s\n", arg)
 			}
 			os.Exit(1)
+		}
+
+		if strings.TrimSpace(value) == "" {
+			continue
 		}
 	}
 	return cfg
