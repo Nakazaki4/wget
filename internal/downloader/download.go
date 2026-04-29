@@ -43,6 +43,7 @@ func Download(cfg *Config, url, basePath string) {
 	if err != nil {
 		fmt.Printf("%v \n", err)
 	}
+	defer file.Close()
 
 	var reader io.Reader = resp.Body
 	if cfg.RateLimit != "" {
