@@ -80,7 +80,11 @@ func copyFile(url, savePath string, dst io.Writer, src io.Reader, total int64) e
 		}
 	}
 
-	fmt.Printf("\n\nDownloaded [%s]\n", url)
+	if term.IsTerminal(int(os.Stdout.Fd())) {
+		fmt.Println("\n")
+	}
+
+	fmt.Printf("Downloaded [%s]\n", url)
 	fmt.Printf("finished at %v", time.Now().Format("2006-01-02 15:04:05"))
 	return nil
 }
@@ -90,10 +94,6 @@ func printProgress(downloaded, total int64, start time.Time) {
 	elapsed_time := time.Since(start).Seconds()
 	speed := float64(downloaded) / elapsed_time
 	remaining_time := time.Duration(float64(total-downloaded)/speed) * time.Second
-
-	barWidth := getBarWidth()
-	filled := int(float64(barWidth) * float64(downloaded) / float64(total))
-	bar := strings.Repeat("=", filled) + strings.Repeat(" ", barWidth-filled)
 
 	dl_str := formatSize(downloaded)
 	tot_str := formatSize(total)
@@ -106,8 +106,13 @@ func printProgress(downloaded, total int64, start time.Time) {
 		time_str = formatDuration(remaining_time)
 	}
 
-	fmt.Printf("\r %s / %s [%s] %.2f%% %s %s",
-		dl_str, tot_str, bar, percent, speed_str, time_str)
+	if term.IsTerminal(int(os.Stdout.Fd())) {
+		barWidth := getBarWidth()
+		filled := int(float64(barWidth) * float64(downloaded) / float64(total))
+		bar := strings.Repeat("=", filled) + strings.Repeat(" ", barWidth-filled)
+		fmt.Printf("\r %s / %s [%s] %.2f%% %s %s",
+			dl_str, tot_str, bar, percent, speed_str, time_str)
+	}
 }
 
 func formatDuration(d time.Duration) string {

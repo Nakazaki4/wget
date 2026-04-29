@@ -42,8 +42,9 @@ func commandExecute(cfg *downloader.Config) {
 
 			for scanner.Scan() {
 				url := scanner.Text()
-				// fmt.Println(url)
-				downloader.Download(cfg, url, base_path)
+				if strings.TrimSpace(url) != "" {
+					downloader.Download(cfg, url, base_path)
+				}
 			}
 			if err := scanner.Err(); err != nil {
 				fmt.Println("Error reading file:", err)
