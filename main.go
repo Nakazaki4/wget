@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"wget/internal/downloader"
+	"wget/internal/mirror"
 )
 
 func main() {
@@ -30,7 +31,14 @@ func main() {
 
 func commandExecute(cfg *downloader.Config) {
 	if cfg.Mirror {
-		// should route to the mirroring section
+		for _, u := range cfg.URLs {
+			crawler, err := mirror.NewCrawler(u, cfg.Reject, cfg.Exclude)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			crawler.Start()
+		}
 	} else {
 		// route to the normal download section
 		base_path := expandHomeDir(cfg.OutputPath)
